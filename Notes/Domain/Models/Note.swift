@@ -13,7 +13,7 @@ struct Note: Identifiable, Codable, Equatable {
     var title: String
     var content: String
     var tags: [String]
-    var isFavorite: Bool
+    var isImportant: Bool
     var isArchived: Bool
     let createdAt: Date
     var updatedAt: Date
@@ -23,7 +23,7 @@ struct Note: Identifiable, Codable, Equatable {
         title: String = "",
         content: String = "",
         tags: [String] = [],
-        isFavorite: Bool = false,
+        isImportant: Bool = false,
         isArchived: Bool = false,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
@@ -32,7 +32,7 @@ struct Note: Identifiable, Codable, Equatable {
         self.title = title
         self.content = content
         self.tags = tags
-        self.isFavorite = isFavorite
+        self.isImportant = isImportant
         self.isArchived = isArchived
         self.createdAt = createdAt
         self.updatedAt = updatedAt

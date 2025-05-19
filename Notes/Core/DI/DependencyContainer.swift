@@ -55,11 +55,16 @@ final class DependencyContainer {
         return FetchNoteDetailUseCase(repository: notesRepository)
     }
     
+    func makeSaveNoteUseCase() -> SaveNoteUseCase {
+        return SaveNoteUseCase(repository: notesRepository)
+    }
+    
     // MARK: - ViewModels
     
     func makeNotesListViewModel(coordinator: NotesCoordinator) -> NotesListViewModel {
         return NotesListViewModel(
             fetchNotesUseCase: makeFetchNotesUseCase(),
+            saveNoteUseCase: makeSaveNoteUseCase(),
             coordinator: coordinator
         )
     }
@@ -68,6 +73,7 @@ final class DependencyContainer {
         return NoteDetailViewModel(
             note: note,
             fetchNoteDetailUseCase: makeFetchNoteDetailUseCase(),
+            saveNoteUseCase: makeSaveNoteUseCase(),
             coordinator: coordinator
         )
     }
