@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 /// Use case for fetching a specific note's details
 /// Handles the business logic for retrieving a single note
@@ -18,9 +19,24 @@ final class FetchNoteDetailUseCase {
     }
     
     func execute(noteId: String) async throws -> Note? {
-        // For now, return mock data
-        let sampleNotes = createSampleNotes()
-        return sampleNotes.first { $0.id == noteId }
+        // Use the repository to fetch note details
+        return try await withCheckedThrowingContinuation { continuation in
+            var cancellable: AnyCancellable?
+            cancellable = repository.fetchNotes()
+                .sink(
+                    receiveCompletion: { completion in
+                        cancellable?.cancel()
+                        if case .failure(let error) = completion {
+                            continuation.resume(throwing: error)
+                        }
+                    },
+                    receiveValue: { notes in
+                        cancellable?.cancel()
+                        let note = notes.first { $0.id == noteId }
+                        continuation.resume(returning: note)
+                    }
+                )
+        }
     }
     
     private func createSampleNotes() -> [Note] {

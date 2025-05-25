@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 /// Use case for fetching notes
 /// Handles the business logic for retrieving notes with various filters
@@ -18,8 +19,23 @@ final class FetchNotesUseCase {
     }
     
     func execute() async throws -> [Note] {
-        // For now, return sample data until we implement the full repository
-        return createSampleNotes()
+        // Use the repository to fetch notes
+        return try await withCheckedThrowingContinuation { continuation in
+            var cancellable: AnyCancellable?
+            cancellable = repository.fetchNotes()
+                .sink(
+                    receiveCompletion: { completion in
+                        cancellable?.cancel()
+                        if case .failure(let error) = completion {
+                            continuation.resume(throwing: error)
+                        }
+                    },
+                    receiveValue: { notes in
+                        cancellable?.cancel()
+                        continuation.resume(returning: notes)
+                    }
+                )
+        }
     }
     
     private func createSampleNotes() -> [Note] {
@@ -75,12 +91,27 @@ final class FetchNotesUseCase {
                 isArchived: true,
                 createdAt: now.addingTimeInterval(-86400 * 30), // 30 days ago
                 updatedAt: now.addingTimeInterval(-86400 * 15)  // 15 days ago
+            ),
+            Note(
+                id: "6",
+                title: "Travel Plans",
+                content: "Summer vacation planning:\n\n📍 Destinations to consider:\n• Japan (cherry blossom season)\n• Italy (Renaissance art tour)\n• New Zealand (nature and hiking)\n\n📋 Todo:\n• Research flights\n• Book accommodations\n• Create itinerary",
+                tags: ["personal", "travel", "planning"],
+                isImportant: false,
+                isArchived: false,
+                createdAt: now.addingTimeInterval(-86400 * 4), // 4 days ago
+                updatedAt: now.addingTimeInterval(-3600 * 12)  // 12 hours ago
+            ),
+            Note(
+                id: "7",
+                title: "Quick Thoughts",
+                content: "Random ideas that came to mind today...",
+                tags: ["ideas"],
+                isImportant: false,
+                isArchived: false,
+                createdAt: now.addingTimeInterval(-3600 * 3), // 3 hours ago
+                updatedAt: now.addingTimeInterval(-3600 * 1)  // 1 hour ago
             )
         ]
-    }
-}
-                return filteredNotes.sorted { $0.updatedAt > $1.updatedAt }
-            }
-            .eraseToAnyPublisher()
     }
 }
