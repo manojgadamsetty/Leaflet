@@ -43,6 +43,17 @@ class NotesListViewController: UIViewController {
         return button
     }()
     
+    private lazy var dummyDataButton: UIBarButtonItem = {
+        let button = UIBarButtonItem(
+            image: UIImage(systemName: "doc.badge.plus"),
+            style: .plain,
+            target: self,
+            action: #selector(addDummyDataTapped)
+        )
+        button.tintColor = MaterialColors.secondary
+        return button
+    }()
+    
     private lazy var categorySegmentedControl: UISegmentedControl = {
         let items = NotesListViewModel.NoteCategory.allCases.map { $0.title }
         let control = UISegmentedControl(items: items)
@@ -137,6 +148,7 @@ class NotesListViewController: UIViewController {
         view.backgroundColor = MaterialColors.background
         
         navigationItem.rightBarButtonItem = addButton
+        navigationItem.leftBarButtonItem = dummyDataButton
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         
@@ -218,6 +230,21 @@ class NotesListViewController: UIViewController {
     // MARK: - Actions
     @objc private func addButtonTapped() {
         viewModel.addNewNote()
+    }
+    
+    @objc private func addDummyDataTapped() {
+        let alert = UIAlertController(
+            title: "Add Sample Data",
+            message: "This will add realistic sample notes to help you explore the app. Continue?",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Add Sample Data", style: .default) { [weak self] _ in
+            self?.viewModel.addDummyData()
+        })
+        
+        present(alert, animated: true)
     }
     
     @objc private func categoryChanged() {
