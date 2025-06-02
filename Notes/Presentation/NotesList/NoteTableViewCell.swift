@@ -193,46 +193,46 @@ class NoteTableViewCell: UITableViewCell {
         let visibleTags = Array(tags.prefix(3))
         
         for tag in visibleTags {
-            let tagLabel = createTagLabel(text: tag)
-            tagsStackView.addArrangedSubview(tagLabel)
+            let tagView = createTagLabel(text: tag)
+            tagsStackView.addArrangedSubview(tagView)
         }
         
         // Add "more" indicator if there are additional tags
         if tags.count > 3 {
-            let moreLabel = createTagLabel(text: "+\(tags.count - 3)")
-            moreLabel.backgroundColor = MaterialColors.textHint.withAlphaComponent(0.2)
-            tagsStackView.addArrangedSubview(moreLabel)
+            let moreView = createTagLabel(text: "+\(tags.count - 3)")
+            moreView.backgroundColor = MaterialColors.textHint.withAlphaComponent(0.15)
+            tagsStackView.addArrangedSubview(moreView)
         }
         
         tagsStackView.isHidden = tags.isEmpty
     }
     
-    private func createTagLabel(text: String) -> UILabel {
+    private func createTagLabel(text: String) -> UIView {
+        let containerView = UIView()
+        containerView.backgroundColor = MaterialColors.primary.withAlphaComponent(0.1)
+        containerView.layer.cornerRadius = 10
+        containerView.layer.masksToBounds = true
+        containerView.translatesAutoresizingMaskIntoConstraints = false
+        
         let label = UILabel()
         label.text = text
         label.font = UIFont.systemFont(ofSize: 11, weight: .medium)
         label.textColor = MaterialColors.primary
-        label.backgroundColor = MaterialColors.primary.withAlphaComponent(0.1)
-        label.layer.cornerRadius = 8
-        label.layer.masksToBounds = true
         label.textAlignment = .center
         label.numberOfLines = 1
-        
-        // Add padding
         label.translatesAutoresizingMaskIntoConstraints = false
-        let paddingView = UIView()
-        paddingView.backgroundColor = .clear
-        paddingView.addSubview(label)
+        
+        containerView.addSubview(label)
         
         NSLayoutConstraint.activate([
-            label.topAnchor.constraint(equalTo: paddingView.topAnchor, constant: 4),
-            label.leadingAnchor.constraint(equalTo: paddingView.leadingAnchor, constant: 8),
-            label.trailingAnchor.constraint(equalTo: paddingView.trailingAnchor, constant: -8),
-            label.bottomAnchor.constraint(equalTo: paddingView.bottomAnchor, constant: -4),
+            label.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 4),
+            label.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 8),
+            label.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8),
+            label.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -4),
             label.heightAnchor.constraint(equalToConstant: 16)
         ])
         
-        return label
+        return containerView
     }
     
     // MARK: - Actions
