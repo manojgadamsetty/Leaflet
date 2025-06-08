@@ -18,6 +18,7 @@ class NoteDetailViewModel: ObservableObject {
     
     // MARK: - Private Properties
     private let fetchNoteDetailUseCase: FetchNoteDetailUseCase
+    private let saveNoteUseCase: SaveNoteUseCase
     private let coordinator: NotesCoordinator
     private var cancellables = Set<AnyCancellable>()
     private var originalNote: Note?
@@ -33,14 +34,18 @@ class NoteDetailViewModel: ObservableObject {
     }
     
     var canSave: Bool {
-        return !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && hasUnsavedChanges
+        let titleNotEmpty = !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let result = titleNotEmpty && hasUnsavedChanges
+        print("🔍 canSave check: title='\(title)', titleNotEmpty=\(titleNotEmpty), hasUnsavedChanges=\(hasUnsavedChanges), result=\(result)")
+        return result
     }
     
     // MARK: - Initialization
-    init(note: Note?, fetchNoteDetailUseCase: FetchNoteDetailUseCase, coordinator: NotesCoordinator) {
+    init(note: Note?, fetchNoteDetailUseCase: FetchNoteDetailUseCase, saveNoteUseCase: SaveNoteUseCase, coordinator: NotesCoordinator) {
         self.note = note
         self.originalNote = note
         self.fetchNoteDetailUseCase = fetchNoteDetailUseCase
+        self.saveNoteUseCase = saveNoteUseCase
         self.coordinator = coordinator
         self.isNewNote = note == nil
         
@@ -63,7 +68,9 @@ class NoteDetailViewModel: ObservableObject {
             do {
                 let noteDetail = try await fetchNoteDetailUseCase.execute(noteId: noteId)
                 await MainActor.run {
-                    self.updateWithNote(noteDetail)
+                    if let noteDetail = noteDetail {
+                        self.updateWithNote(noteDetail)
+                    }
                     self.isLoading = false
                 }
             } catch {
@@ -76,26 +83,33 @@ class NoteDetailViewModel: ObservableObject {
     }
     
     func saveNote() {
-        guard canSave else { return }
+        guard canSave else { 
+            print("❌ Cannot save - canSave is false")
+            return 
+        }
         
+        print("🚀 Starting save process...")
         isLoading = true
         errorMessage = nil
         
         let noteToSave = createNoteFromCurrentState()
+        print("📝 Note to save: \(noteToSave)")
         
-        // TODO: Implement save use case
         Task {
             do {
-                // let savedNote = try await saveNoteUseCase.execute(note: noteToSave)
+                print("🔄 Calling saveNoteUseCase...")
+                let savedNote = try await saveNoteUseCase.execute(note: noteToSave)
+                print("✅ Note saved successfully: \(savedNote)")
                 await MainActor.run {
-                    // self.updateWithNote(savedNote)
+                    self.updateWithNote(savedNote)
                     self.hasUnsavedChanges = false
                     self.isLoading = false
                     self.coordinator.didSaveNote()
                 }
             } catch {
+                print("❌ Failed to save note: \(error)")
                 await MainActor.run {
-                    self.errorMessage = error.localizedDescription
+                    self.errorMessage = "Failed to save note: \(error.localizedDescription)"
                     self.isLoading = false
                 }
             }
@@ -103,24 +117,17 @@ class NoteDetailViewModel: ObservableObject {
     }
     
     func deleteNote() {
-        guard let note = note, !isNewNote else { return }
+        guard let _ = note, !isNewNote else { return }
         
         isLoading = true
         errorMessage = nil
         
         // TODO: Implement delete use case
         Task {
-            do {
-                // try await deleteNoteUseCase.execute(noteId: note.id)
-                await MainActor.run {
-                    self.isLoading = false
-                    self.coordinator.didDeleteNote()
-                }
-            } catch {
-                await MainActor.run {
-                    self.errorMessage = error.localizedDescription
-                    self.isLoading = false
-                }
+            // try await deleteNoteUseCase.execute(noteId: note.id)
+            await MainActor.run {
+                self.isLoading = false
+                self.coordinator.didDeleteNote()
             }
         }
     }
@@ -195,17 +202,24 @@ class NoteDetailViewModel: ObservableObject {
     }
     
     private func checkForUnsavedChanges() {
+        print("🔄 Checking for unsaved changes...")
         guard let originalNote = originalNote else {
             // New note - has changes if any field is not empty
-            hasUnsavedChanges = !title.isEmpty || !content.isEmpty || !tags.isEmpty
+            let newHasChanges = !title.isEmpty || !content.isEmpty || !tags.isEmpty
+            print("📝 New note: title='\(title)', content='\(content)', tags=\(tags), hasChanges=\(newHasChanges)")
+            hasUnsavedChanges = newHasChanges
             return
         }
         
-        hasUnsavedChanges = title != originalNote.title ||
-                           content != originalNote.content ||
-                           tags != originalNote.tags ||
-                           isImportant != originalNote.isImportant ||
-                           isArchived != originalNote.isArchived
+        let titleChanged = title != originalNote.title
+        let contentChanged = content != originalNote.content
+        let tagsChanged = tags != originalNote.tags
+        let importantChanged = isImportant != originalNote.isImportant
+        let archivedChanged = isArchived != originalNote.isArchived
+        
+        hasUnsavedChanges = titleChanged || contentChanged || tagsChanged || importantChanged || archivedChanged
+        
+        print("📋 Existing note changes: title=\(titleChanged), content=\(contentChanged), tags=\(tagsChanged), important=\(importantChanged), archived=\(archivedChanged), hasChanges=\(hasUnsavedChanges)")
     }
     
     private func updateWithNote(_ note: Note) {
