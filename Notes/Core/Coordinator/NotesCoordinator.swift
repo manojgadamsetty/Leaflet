@@ -25,23 +25,14 @@ final class NotesCoordinator: Coordinator {
     }
     
     private func showNotesList() {
-        let fetchNotesUseCase = dependencyContainer.makeFetchNotesUseCase()
-        let viewModel = NotesListViewModel(
-            fetchNotesUseCase: fetchNotesUseCase,
-            coordinator: self
-        )
+        let viewModel = dependencyContainer.makeNotesListViewModel(coordinator: self)
         let notesListVC = NotesListViewController(viewModel: viewModel)
         
         navigationController.setViewControllers([notesListVC], animated: false)
     }
     
     func showNoteDetail(note: Note?) {
-        let fetchNoteDetailUseCase = dependencyContainer.makeFetchNoteDetailUseCase()
-        let viewModel = NoteDetailViewModel(
-            note: note,
-            fetchNoteDetailUseCase: fetchNoteDetailUseCase,
-            coordinator: self
-        )
+        let viewModel = dependencyContainer.makeNoteDetailViewModel(note: note, coordinator: self)
         let noteDetailVC = NoteDetailViewController(viewModel: viewModel)
         
         navigationController.pushViewController(noteDetailVC, animated: true)
