@@ -13,19 +13,14 @@ final class AppCoordinator: Coordinator {
     var navigationController: UINavigationController
     var childCoordinators: [Coordinator] = []
     
-    private let window: UIWindow
     private let dependencyContainer: DependencyContainer
     
-    init(window: UIWindow, dependencyContainer: DependencyContainer) {
-        self.window = window
-        self.dependencyContainer = dependencyContainer
-        self.navigationController = UINavigationController()
+    init(navigationController: UINavigationController) {
+        self.navigationController = navigationController
+        self.dependencyContainer = DependencyContainer()
     }
     
     func start() {
-        window.rootViewController = navigationController
-        window.makeKeyAndVisible()
-        
         // Start with notes list
         showNotesList()
     }

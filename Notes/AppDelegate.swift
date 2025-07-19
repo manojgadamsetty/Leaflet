@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  Notes
+//  Leaflet
 //
 //  Created by Manoj Gadamsetty on 18/07/25.
 //
@@ -11,11 +11,32 @@ import CoreData
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // Configure Material Design theme
+        configureMaterialTheme()
         return true
+    }
+    
+    private func configureMaterialTheme() {
+        // Configure navigation bar appearance
+        let navBarAppearance = UINavigationBarAppearance()
+        navBarAppearance.configureWithDefaultBackground()
+        navBarAppearance.backgroundColor = MaterialColors.surface
+        navBarAppearance.titleTextAttributes = [.foregroundColor: MaterialColors.textPrimary]
+        navBarAppearance.largeTitleTextAttributes = [.foregroundColor: MaterialColors.textPrimary]
+        
+        UINavigationBar.appearance().standardAppearance = navBarAppearance
+        UINavigationBar.appearance().scrollEdgeAppearance = navBarAppearance
+        UINavigationBar.appearance().tintColor = MaterialColors.primary
+        
+        // Configure tab bar appearance
+        let tabBarAppearance = UITabBarAppearance()
+        tabBarAppearance.configureWithDefaultBackground()
+        tabBarAppearance.backgroundColor = MaterialColors.surface
+        
+        UITabBar.appearance().standardAppearance = tabBarAppearance
+        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+        UITabBar.appearance().tintColor = MaterialColors.primary
     }
 
     // MARK: UISceneSession Lifecycle

@@ -25,50 +25,37 @@ final class NotesCoordinator: Coordinator {
     }
     
     private func showNotesList() {
-        let viewModel = dependencyContainer.makeNotesListViewModel()
+        let fetchNotesUseCase = dependencyContainer.makeFetchNotesUseCase()
+        let viewModel = NotesListViewModel(
+            fetchNotesUseCase: fetchNotesUseCase,
+            coordinator: self
+        )
         let notesListVC = NotesListViewController(viewModel: viewModel)
-        
-        // Set up navigation actions
-        notesListVC.onNoteSelected = { [weak self] noteId in
-            self?.showNoteDetail(noteId: noteId)
-        }
-        
-        notesListVC.onCreateNote = { [weak self] in
-            self?.showNoteDetail(noteId: nil)
-        }
         
         navigationController.setViewControllers([notesListVC], animated: false)
     }
     
-    private func showNoteDetail(noteId: String?) {
-        let viewModel = dependencyContainer.makeNoteDetailViewModel(noteId: noteId)
-        let mode: NoteDetailMode = noteId == nil ? .create : .view
-        let noteDetailVC = NoteDetailViewController(viewModel: viewModel, mode: mode)
-        
-        // Set up navigation actions
-        noteDetailVC.onDismiss = { [weak self] in
-            self?.navigationController.popViewController(animated: true)
-        }
-        
-        noteDetailVC.onSave = { [weak self] in
-            self?.navigationController.popViewController(animated: true)
-        }
-        
-        noteDetailVC.onEdit = { [weak self] noteId in
-            // Replace current detail view with edit mode
-            let editViewModel = self?.dependencyContainer.makeNoteDetailViewModel(noteId: noteId)
-            if let editViewModel = editViewModel {
-                let editVC = NoteDetailViewController(viewModel: editViewModel, mode: .edit)
-                editVC.onDismiss = { [weak self] in
-                    self?.navigationController.popViewController(animated: true)
-                }
-                editVC.onSave = { [weak self] in
-                    self?.navigationController.popViewController(animated: true)
-                }
-                self?.navigationController.pushViewController(editVC, animated: true)
-            }
-        }
+    func showNoteDetail(note: Note?) {
+        let fetchNoteDetailUseCase = dependencyContainer.makeFetchNoteDetailUseCase()
+        let viewModel = NoteDetailViewModel(
+            note: note,
+            fetchNoteDetailUseCase: fetchNoteDetailUseCase,
+            coordinator: self
+        )
+        let noteDetailVC = NoteDetailViewController(viewModel: viewModel)
         
         navigationController.pushViewController(noteDetailVC, animated: true)
+    }
+    
+    func didSaveNote() {
+        navigationController.popViewController(animated: true)
+    }
+    
+    func didCancelNote() {
+        navigationController.popViewController(animated: true)
+    }
+    
+    func didDeleteNote() {
+        navigationController.popViewController(animated: true)
     }
 }

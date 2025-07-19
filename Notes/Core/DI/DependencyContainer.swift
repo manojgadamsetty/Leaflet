@@ -47,28 +47,28 @@ final class DependencyContainer {
     
     // MARK: - Use Cases
     
-    private func makeFetchNotesUseCase() -> FetchNotesUseCase {
+    func makeFetchNotesUseCase() -> FetchNotesUseCase {
         return FetchNotesUseCase(repository: notesRepository)
     }
     
-    private func makeFetchNoteDetailUseCase() -> FetchNoteDetailUseCase {
+    func makeFetchNoteDetailUseCase() -> FetchNoteDetailUseCase {
         return FetchNoteDetailUseCase(repository: notesRepository)
     }
     
     // MARK: - ViewModels
     
-    func makeNotesListViewModel() -> NotesListViewModel {
+    func makeNotesListViewModel(coordinator: NotesCoordinator) -> NotesListViewModel {
         return NotesListViewModel(
             fetchNotesUseCase: makeFetchNotesUseCase(),
-            repository: notesRepository
+            coordinator: coordinator
         )
     }
     
-    func makeNoteDetailViewModel(noteId: String?) -> NoteDetailViewModel {
+    func makeNoteDetailViewModel(note: Note?, coordinator: NotesCoordinator) -> NoteDetailViewModel {
         return NoteDetailViewModel(
-            noteId: noteId,
+            note: note,
             fetchNoteDetailUseCase: makeFetchNoteDetailUseCase(),
-            repository: notesRepository
+            coordinator: coordinator
         )
     }
 }
